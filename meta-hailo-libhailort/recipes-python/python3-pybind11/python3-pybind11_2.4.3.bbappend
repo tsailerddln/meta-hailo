@@ -2,6 +2,6 @@
 
 PV = "2.4.3"
 
-do_install_append() {
+do_install:append() {
     cp -r ${WORKDIR}/pybind11-${PV}/include/pybind11 ${D}${libdir}/${PYTHON_DIR}/site-packages/pybind11/
 }

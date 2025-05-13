@@ -12,11 +12,12 @@ S = "${WORKDIR}/git"
 
 inherit hailort-base systemd
 
-SYSTEMD_SERVICE_${PN} = "hailort.service"
-RDEPENDS_${PN} += "libhailort"
+SYSTEMD_SERVICE:${PN} = "hailort.service"
+RDEPENDS:${PN} += "libhailort"
 OECMAKE_TARGET_COMPILE = "hailort_service"
+HAILO_BUILD_SERVICE = "1"
 
-do_install_append() {
+do_install:append() {
   install -d ${D}${bindir}
   install -m 0755 ${BIN_SRC_DIR}hailort_service ${D}${bindir}
 
@@ -29,4 +30,4 @@ do_install_append() {
   sed -i 's#/usr/local/bin#${bindir}#g' ${D}${systemd_system_unitdir}/hailort.service
 }
 
-FILES_${PN} += "${bindir}/hailort_service ${systemd_system_unitdir}/hailort.service ${sysconfdir}/default/hailort_service"
+FILES:${PN} += "${bindir}/hailort_service ${systemd_system_unitdir}/hailort.service ${sysconfdir}/default/hailort_service"

@@ -19,7 +19,7 @@ RDEPENDS_${PN} += "libhailort python3-future python3-importlib-metadata python3-
                    python3-appdirs python3-contextlib2 python3-netaddr \
                    python3-argcomplete python3-verboselogs python3-numpy python3-setuptools"
 
-do_compile_prepend() {
+do_compile:prepend() {
     # these cmake params should have been propagated directly to cmake. However, we inherit setuptools3 and setup.py
     # is responsible for cmake execution. These params must pass to setup.py the ENV variable, and from there, pass to
     # cmake.

@@ -25,7 +25,7 @@ SRC_URI[sha256sum] = "edf6116872c863e1aa9d5bb7cb5e05a022c519a4594dc703843343a9dd
 
 S = "${WORKDIR}/distlib-${PV}"
 
-inherit distutils3
+inherit setuptools3
 
 # WARNING: the following rdepends are determined through basic analysis of the
 # python sources, and might not be 100% accurate.

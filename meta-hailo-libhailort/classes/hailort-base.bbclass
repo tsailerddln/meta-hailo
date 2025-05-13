@@ -14,6 +14,8 @@ EXTRA_OECMAKE =  "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${LIB_SRC_DIR} \
                   -DCMAKE_SKIP_RPATH=ON                           \
                   -DHAILO_BUILD_SERVICE=${HAILO_BUILD_SERVICE}"
 
+OECMAKE_ARGS:remove = "-DFETCHCONTENT_FULLY_DISCONNECTED=ON"
+
 # Skip cmake do_install process - overrides cmake bbclass
 cmake_do_install() {
     :
@@ -52,6 +54,9 @@ python do_prepare_hailort_external_dependencies() {
 # * The task needs to run after fetching so we can access the repos.
 # * The task needs cmake, which is provided by the do_prepare_recipe_sysroot task.
 addtask do_prepare_hailort_external_dependencies before do_unpack after do_fetch do_prepare_recipe_sysroot
+
+do_prepare_hailort_external_dependencies[network] = "1"
+do_configure[network] = "1"
 
 # If HAILORT_OFFLINE_BUILD_ENABLE is set we'll unpack hailort's sources and dependencies from ${TAR_FILE_PATH} (overwriting the default unpack flow)
 do_unpack_from_tar_if_exists() {

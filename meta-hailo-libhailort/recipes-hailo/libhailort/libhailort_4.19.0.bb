@@ -15,7 +15,7 @@ OECMAKE_TARGET_COMPILE = "libhailort"
 HAILORT_INCLUDE_STAGING_DIR = "${D}${includedir}"
 HAILORT_EXPORT_DIR = "${D}${libdir}/cmake/HailoRT"
 
-do_install_append() {
+do_install:append() {
   install -d ${D}${libdir}
   install -m 0755 ${LIB_SRC_DIR}/libhailort.so.${PV} ${D}${libdir}
   ln -s -r ${D}${libdir}/libhailort.so.${PV} ${D}${libdir}/libhailort.so
@@ -25,9 +25,9 @@ do_install_append() {
 
   install -d ${HAILORT_EXPORT_DIR}
   install -m 0644 ${WORKDIR}/build/hailort/libhailort/src/*.cmake ${HAILORT_EXPORT_DIR}
-  install -m 0644 ${WORKDIR}/build/hailort/libhailort/src/CMakeFiles/Export/lib/cmake/HailoRT/*.cmake ${HAILORT_EXPORT_DIR}
+  install -m 0644 ${WORKDIR}/build/hailort/libhailort/src/CMakeFiles/Export/*/*.cmake ${HAILORT_EXPORT_DIR}
 
 }
 
-FILES_${PN} += "${libdir}/libhailort.so.${PV}"
-FILES_${PN}-dev += "${includedir}/hailort ${includedir}/hailort/* ${libdir}/libhailort.so"
+FILES:${PN} += "${libdir}/libhailort.so.${PV}"
+FILES:${PN}-dev += "${includedir}/hailort ${includedir}/hailort/* ${libdir}/libhailort.so"

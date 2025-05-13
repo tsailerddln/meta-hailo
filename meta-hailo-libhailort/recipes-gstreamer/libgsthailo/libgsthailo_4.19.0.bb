@@ -17,7 +17,7 @@ inherit hailort-base
 DEPENDS = "glib-2.0 gstreamer1.0 gstreamer1.0-plugins-base glib-2.0-native"
 RDEPENDS_${PN} += "libhailort"
 
-EXTRA_OECMAKE_append = "-DHAILO_BUILD_GSTREAMER=1"
+EXTRA_OECMAKE:append = "-DHAILO_BUILD_GSTREAMER=1"
 OECMAKE_TARGET_COMPILE = "gsthailo"
 
 GST_HAILO_SOURCES_DIR = "${S}/hailort/libhailort/bindings/gstreamer/gst-hailo"
