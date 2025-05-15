@@ -10,6 +10,8 @@ SRCREV = "3d673252095c11a99147a6e72b4c11150ebd0882"
 
 S = "${WORKDIR}/git"
 
+INSANE_SKIP:${PN}-dev += " buildpaths"
+
 inherit hailort-base
 OECMAKE_TARGET_COMPILE = "libhailort"
 HAILORT_INCLUDE_STAGING_DIR = "${D}${includedir}"
