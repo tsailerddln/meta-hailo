@@ -1,0 +1,40 @@
+Upstream-Status: Inappropriate [ugly workaround for hailo bug]
+
+---
+
+--- a/mm/mmap.c	2025-05-19 12:27:53.484040587 +0200
++++ b/mm/mmap.c	2025-05-21 21:22:48.107902858 +0200
+@@ -975,6 +975,23 @@
+ EXPORT_SYMBOL(find_vma);
+ 
+ /**
++ * find_vma_hailo() - Find the VMA for a given address, or the next VMA.
++ * @mm: The mm_struct to check
++ * @addr: The address
++ *
++ * Returns: The VMA associated with addr, or the next VMA.
++ * May return %NULL in the case of no VMA at addr or above.
++ * Does not warn when mm lock is not held
++ */
++struct vm_area_struct *find_vma_hailo(struct mm_struct *mm, unsigned long addr)
++{
++	unsigned long index = addr;
++
++	return mt_find(&mm->mm_mt, &index, ULONG_MAX);
++}
++EXPORT_SYMBOL(find_vma_hailo);
++
++/**
+  * find_vma_prev() - Find the VMA for a given address, or the next vma and
+  * set %pprev to the previous VMA, if any.
+  * @mm: The mm_struct to check
+--- a/include/linux/mm.h	2025-05-19 12:27:53.181037744 +0200
++++ b/include/linux/mm.h	2025-05-21 21:25:47.654160545 +0200
+@@ -3419,6 +3419,7 @@
+ extern struct vm_area_struct * find_vma(struct mm_struct * mm, unsigned long addr);
+ extern struct vm_area_struct * find_vma_prev(struct mm_struct * mm, unsigned long addr,
+ 					     struct vm_area_struct **pprev);
++extern struct vm_area_struct * find_vma_hailo(struct mm_struct * mm, unsigned long addr);
+ 
+ /*
+  * Look up the first VMA which intersects the interval [start_addr, end_addr)

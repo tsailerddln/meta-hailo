@@ -1,0 +1,123 @@
+From e876294095e303cc072d2326c62882daa6e6a719 Mon Sep 17 00:00:00 2001
+From: Thomas Sailer <tsailer@daedalean.ai>
+Date: Tue, 20 May 2025 13:28:46 +0200
+Subject: [PATCH] hailo vdma locking fix
+Upstream-Status: Backport
+
+---
+ linux/vdma/memory.c | 46 ++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 43 insertions(+), 3 deletions(-)
+
+diff --git a/linux/vdma/memory.c b/linux/vdma/memory.c
+index 8c210c4..f11a0af 100644
+--- a/linux/vdma/memory.c
++++ b/linux/vdma/memory.c
+@@ -9,11 +9,13 @@
+ #include "utils.h"
+ #include "utils/compact.h"
+ 
++#include <linux/highmem-internal.h>
+ #include <linux/slab.h>
+ #include <linux/scatterlist.h>
+ #include <linux/sched.h>
+ #include <linux/module.h>
+ 
++#define SGL_MAX_SEGMENT_SIZE 	(0x10000)
+ // See linux/mm.h
+ #define MMIO_AND_NO_PAGES_VMA_MASK (VM_IO | VM_PFNMAP)
+ // The linux kernel names the dmabuf's vma vm_file field "dmabuf"
+@@ -161,13 +163,14 @@ struct hailo_vdma_buffer *hailo_vdma_buffer_map(struct device *dev,
+         goto cleanup;
+     }
+ 
++    mmap_read_lock(current->mm);
+     if (HAILO_DMA_DMABUF_BUFFER != buffer_type) {
+         vma = find_vma(current->mm, user_address);
+         if (IS_ENABLED(HAILO_SUPPORT_MMIO_DMA_MAPPING)) {
+             if (NULL == vma) {
+                 dev_err(dev, "no vma for virt_addr/size = 0x%08lx/0x%08zx\n", user_address, size);
+                 ret = -EFAULT;
+-                goto cleanup;
++                goto unlock_cleanup;
+             }
+         }
+ 
+@@ -177,7 +180,7 @@ struct hailo_vdma_buffer *hailo_vdma_buffer_map(struct device *dev,
+             ret = create_fd_from_vma(dev, vma);
+             if (ret < 0) {
+                 dev_err(dev, "Failed creating fd from vma in given dmabuf\n");
+-                goto cleanup;
++                goto unlock_cleanup;
+             }
+             // Override user address with fd to the dmabuf - like normal dmabuf flow
+             user_address = ret;
+@@ -210,7 +213,7 @@ struct hailo_vdma_buffer *hailo_vdma_buffer_map(struct device *dev,
+         ret = hailo_map_dmabuf(dev, user_address, direction, &sgt, &dmabuf_info);
+         if (ret < 0) {
+             dev_err(dev, "Failed mapping dmabuf\n");
+-            goto cleanup;
++            goto unlock_cleanup;
+         }
+         // If created dmabuf fd from vma need to decrement refcount and release fd
+         if (created_dmabuf_fd_from_vma) {
+@@ -232,6 +235,8 @@ struct hailo_vdma_buffer *hailo_vdma_buffer_map(struct device *dev,
+         }
+     }
+ 
++    mmap_read_unlock(current->mm);
++
+     kref_init(&mapped_buffer->kref);
+     mapped_buffer->device = dev;
+     mapped_buffer->user_address = user_address;
+@@ -247,6 +252,8 @@ clear_sg_table:
+     clear_sg_table(&sgt);
+ free_buffer_struct:
+     kfree(mapped_buffer);
++unlock_cleanup:
++    mmap_read_unlock(current->mm);
+ cleanup:
+     return ERR_PTR(ret);
+ }
+@@ -567,6 +574,39 @@ void hailo_vdma_clear_continuous_buffer_list(struct hailo_vdma_file_context *con
+     }
+ }
+ 
++/**
++ * follow_pfn - look up PFN at a user virtual address
++ * @vma: memory mapping
++ * @address: user virtual address
++ * @pfn: location to store found PFN
++ *
++ * Only IO mappings and raw PFN mappings are allowed.
++ *
++ * This function does not allow the caller to read the permissions
++ * of the PTE.  Do not use it.
++ *
++ * Return: zero and the pfn at @pfn on success, -ve otherwise.
++ */
++#if defined(HAILO_SUPPORT_MMIO_DMA_MAPPING)
++static int follow_pfn(struct vm_area_struct *vma, unsigned long address,
++       unsigned long *pfn)
++{
++       int ret = -EINVAL;
++       spinlock_t *ptl;
++       pte_t *ptep;
++
++       if (!(vma->vm_flags & (VM_IO | VM_PFNMAP)))
++               return ret;
++
++       ret = follow_pte(vma, address, &ptep, &ptl);
++       if (ret)
++               return ret;
++       *pfn = pte_pfn(ptep_get(ptep));
++       pte_unmap_unlock(ptep, ptl);
++       return 0;
++}
++#endif
++
+ // Assumes the provided user_address belongs to the vma and that MMIO_AND_NO_PAGES_VMA_MASK bits are set under
+ // vma->vm_flags. This is validated in hailo_vdma_buffer_map, and won't be checked here
+ #if defined(HAILO_SUPPORT_MMIO_DMA_MAPPING)
+-- 
+2.34.1
+

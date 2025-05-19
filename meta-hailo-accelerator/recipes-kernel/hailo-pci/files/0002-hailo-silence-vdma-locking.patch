@@ -1,0 +1,19 @@
+Upstream-Status: Inappropriate [ugly workaround for hailo bug]
+
+---
+ linux/vdma/memory.c | 46 ++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 43 insertions(+), 3 deletions(-)
+
+diff --git a/linux/vdma/memory.c b/linux/vdma/memory.c
+index 8c210c4..559f5f1 100644
+--- a/linux/vdma/memory.c
++++ b/linux/vdma/memory.c
+@@ -162,7 +162,7 @@ struct hailo_vdma_buffer *hailo_vdma_buffer_map(struct device *dev,
+     }
+ 
+     if (HAILO_DMA_DMABUF_BUFFER != buffer_type) {
+-        vma = find_vma(current->mm, user_address);
++        vma = find_vma_hailo(current->mm, user_address);
+         if (IS_ENABLED(HAILO_SUPPORT_MMIO_DMA_MAPPING)) {
+             if (NULL == vma) {
+                 dev_err(dev, "no vma for virt_addr/size = 0x%08lx/0x%08zx\n", user_address, size);
