@@ -9,12 +9,12 @@ LIC_FILES_CHKSUM = "file://../../LICENSE;md5=39bba7d2cf0ba1036f2a6e2be52fe3f0"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI = " \
-	git://git@github.com/hailo-ai/hailort-drivers.git;protocol=https;branch=master \
+	git://git@github.com/hailo-ai/hailort-drivers.git;protocol=https;branch=hailo8 \
 	file://0001-hailo-vdma-locking-fix.patch;patchdir=${WORKDIR}/git;apply=no \
 	file://0002-hailo-silence-vdma-locking.patch;patchdir=${WORKDIR}/git;apply=yes \
 "
 
-SRCREV = "d1af769eb1d8074c5a0151a37b22b46bd483e5a7"
+SRCREV = "ce1087bfe8132c99b41374e3128fc78612a3f492"
 
 inherit module
 
