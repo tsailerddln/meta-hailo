@@ -16,8 +16,8 @@ NO_GENERIC_LICENSE[LICENSE] = "LICENSE"
 
 FW_PATH = "${UNPACKDIR}/${FW}"
 
-S = "${WORKDIR}/sources"
-UNPACKDIR = "${S}"
+UNPACKDIR = "${WORKDIR}/sources"
+S = "${UNPACKDIR}"
 
 do_install:append() {
 	# Stores hailo8_fw.bin in the rootfs under /usr/lib/firmware/hailo/

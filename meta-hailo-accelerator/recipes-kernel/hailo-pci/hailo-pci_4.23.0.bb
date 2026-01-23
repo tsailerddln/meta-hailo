@@ -10,15 +10,15 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI = " \
 	git://git@github.com/hailo-ai/hailort-drivers.git;protocol=https;branch=hailo8 \
-	file://0001-hailo-vdma-locking-fix.patch;patchdir=${WORKDIR}/git;apply=no \
-	file://0002-hailo-silence-vdma-locking.patch;patchdir=${WORKDIR}/git;apply=yes \
+	file://0001-hailo-vdma-locking-fix.patch;patchdir=${UNPACKDIR}/${BPN}-${PV};apply=no \
+	file://0002-hailo-silence-vdma-locking.patch;patchdir=${UNPACKDIR}/${BPN}-${PV};apply=yes \
 "
 
 SRCREV = "ce1087bfe8132c99b41374e3128fc78612a3f492"
 
 inherit module
 
-S = "${WORKDIR}/git/linux/pcie"
+S = "${UNPACKDIR}/${PN}-${PV}/linux/pcie"
 
 EXTRA_OEMAKE += "KERNEL_DIR=${STAGING_KERNEL_DIR}"
 MAKE_TARGETS = "all"
